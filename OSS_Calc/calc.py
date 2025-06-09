@@ -11,7 +11,10 @@ class Calculator:
         self.entry = tk.Entry(root, font=("Arial", 24), justify="right")
         self.entry.pack(fill="both", ipadx=8, ipady=15, padx=10, pady=10)
 
-        # 버튼 배열에 환전 버튼 추가
+        # 키보드 입력 처리
+        self.root.bind("<Key>", self.key_input)
+        self.root.bind("<BackSpace>", self.backspace)
+
         buttons = [
             ['7', '8', '9', '/'],
             ['4', '5', '6', '*'],
@@ -36,23 +39,43 @@ class Calculator:
         if char == 'C':
             self.expression = ""
         elif char == '=':
-            try:
-                self.expression = str(eval(self.expression))
-            except:
-                self.expression = "에러"
+            self.evaluate()
         elif char == '₩→¥':
-            try:
-                won = float(eval(self.expression))
-                rate = 9  # 환율: 1엔 = 9원
-                yen = won / rate
-                self.expression = f"{yen:.2f} ¥"
-            except:
-                self.expression = "변환오류"
+            self.convert_to_yen()
         else:
             self.expression += str(char)
+        self.update_display()
 
+    def evaluate(self):
+        try:
+            self.expression = str(eval(self.expression))
+        except:
+            self.expression = "에러"
+
+    def convert_to_yen(self):
+        try:
+            won = float(eval(self.expression))
+            rate = 9  # 환율: 1엔 = 9원
+            yen = won / rate
+            self.expression = f"{yen:.2f} ¥"
+        except:
+            self.expression = "변환오류"
+
+    def update_display(self):
         self.entry.delete(0, tk.END)
         self.entry.insert(tk.END, self.expression)
+
+    def key_input(self, event):
+        key = event.char
+        if key in '0123456789+-*/.':
+            self.expression += key
+        elif event.keysym == 'Return':
+            self.evaluate()
+        self.update_display()
+
+    def backspace(self, event):
+        self.expression = self.expression[:-1]
+        self.update_display()
 
 # 실행
 if __name__ == "__main__":
